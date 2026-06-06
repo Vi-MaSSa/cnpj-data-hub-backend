@@ -1,0 +1,66 @@
+import sys
+from pathlib import Path
+
+from loguru import logger
+
+from app.config import get_settings
+
+
+def configure_logger() -> None:
+    """
+    Configura o Loguru para a aplicação.
+
+    Saídas:
+    - Console do Docker
+    - Arquivo logs/api.log
+
+    Em desenvolvimento, mostra mais detalhes.
+    Em produção, evita expor informações sensíveis.
+    """
+    settings = get_settings()
+
+    logs_dir = Path("logs")
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.remove()
+
+    logger.add(
+        sys.stdout,
+        level=settings.log_level,
+        format=(
+            "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+            "<level>{level: <8}</level> | "
+            "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+            "<level>{message}</level>"
+        ),
+        enqueue=True,
+        backtrace=True,
+        diagnose=settings.app_debug,
+    )
+
+    logger.add(
+        "logs/api.log",
+        level=settings.log_level,
+        format=(
+            "{time:YYYY-MM-DD HH:mm:ss} | "
+            "{level: <8} | "
+            "{name}:{function}:{line} | "
+            "{message}"
+        ),
+        rotation="10 MB",
+        retention="7 days",
+        compression="zip",
+        enqueue=True,
+        backtrace=True,
+        diagnose=settings.app_debug,
+    )
+
+
+def get_logger():
+    """
+    Retorna a instância global do logger.
+
+    Útil caso futuramente a gente queira trocar/adaptar
+    a forma de obter o logger.
+    """
+    return logger
