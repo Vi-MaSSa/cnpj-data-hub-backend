@@ -6,6 +6,9 @@ from loguru import logger
 from app.config import get_settings
 
 
+_pipeline_sink_configured = False
+
+
 def configure_logger() -> None:
     """
     Configura o Loguru para a aplicação.
@@ -64,3 +67,30 @@ def get_logger():
     a forma de obter o logger.
     """
     return logger
+
+
+def configure_pipeline_logger() -> None:
+    global _pipeline_sink_configured
+    if _pipeline_sink_configured:
+        return
+
+    logs_dir = Path("logs")
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.add(
+        "logs/pipeline.log",
+        level="INFO",
+        format=(
+            "{time:YYYY-MM-DD HH:mm:ss} | "
+            "{level: <8} | "
+            "{name}:{function}:{line} | "
+            "{message}"
+        ),
+        rotation="10 MB",
+        retention="14 days",
+        compression="zip",
+        enqueue=True,
+        backtrace=True,
+        diagnose=False,
+    )
+    _pipeline_sink_configured = True

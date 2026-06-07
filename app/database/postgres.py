@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import get_settings
+from app.database.models import Base
 
 settings = get_settings()
 
@@ -45,3 +46,8 @@ def check_postgres_connection() -> bool:
     except Exception:
         logger.exception("PostgreSQL connection failed")
         return False
+
+
+def create_database_tables() -> None:
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created/validated")
