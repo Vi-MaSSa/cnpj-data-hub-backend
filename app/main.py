@@ -4,6 +4,7 @@ from loguru import logger
 
 from app.api.v1.router import api_router
 from app.config import get_settings
+from app.database.postgres import create_database_tables
 from app.utils.logger import configure_logger
 
 settings = get_settings()
@@ -29,6 +30,12 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix="/api/v1")
+
+
+@app.on_event("startup")
+def on_startup() -> None:
+    create_database_tables()
+    logger.info("Application startup checks completed")
 
 
 @app.get("/")

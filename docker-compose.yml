@@ -45,5 +45,21 @@ services:
       redis:
         condition: service_healthy
 
+  worker:
+    build:
+      context: .
+    container_name: cnpj-data-hub-worker
+    env_file:
+      - .env
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: python -m app.workers.worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
